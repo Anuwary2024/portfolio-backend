@@ -1,55 +1,98 @@
+require('dotenv').config();
+
+const express = require('express');
+const cors = require('cors');
+const nodemailer = require('nodemailer');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+
+app.use(cors({
+origin: 'https://anuwaryportfolio.vercel.app'
+}));
+
+function isValidEmail(email) {
+return /^[^\s@]+@[^\s@]+.[^\s@]+$/.test(email);
+}
+
+const transporter = nodemailer.createTransport({
+service: 'gmail',
+auth: {
+user: '[mwitikeanuwary@gmail.com](mailto:mwitikeanuwary@gmail.com)',
+pass: process.env.GMAIL_PASS
+}
+});
+
+app.get('/', (req, res) => {
+res.send('Portfolio Backend Running');
+});
+
+app.get('/health', (req, res) => {
+res.json({ status: 'ok' });
+});
+
 app.post('/api/contact', async (req, res) => {
-  try {
-    const { fullName, email, message } = req.body;
+try {
+const { fullName, email, message } = req.body;
 
-    if (!fullName || !email || !message) {
-      return res.status(400).json({
-        error: 'Please fill in all fields.'
-      });
-    }
+if (!fullName || !email || !message) {
+  return res.status(400).json({
+    error: 'Please fill in all fields.'
+  });
+}
 
-    if (!isValidEmail(email)) {
-      return res.status(400).json({
-        error: 'Invalid email format.'
-      });
-    }
+if (!isValidEmail(email)) {
+  return res.status(400).json({
+    error: 'Invalid email format.'
+  });
+}
 
-    const mailToYou = {
-      from: '"Portfolio Contact" <mwitikeanuwary@gmail.com>',
-      to: 'mwitikeanuwary@gmail.com',
-      subject: `Portfolio Message from ${fullName}`,
-      html: `
-        <h2>New Portfolio Message</h2>
-        <p><strong>Name:</strong> ${fullName}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message}</p>
-      `
-    };
+const mailToYou = {
+  from: '"Portfolio Contact" <mwitikeanuwary@gmail.com>',
+  to: 'mwitikeanuwary@gmail.com',
+  subject: `Portfolio Message from ${fullName}`,
+  html: `
+    <h2>New Portfolio Message</h2>
+    <p><strong>Name:</strong> ${fullName}</p>
+    <p><strong>Email:</strong> ${email}</p>
+    <p><strong>Message:</strong></p>
+    <p>${message}</p>
+  `
+};
 
-    const mailToSender = {
-      from: '"Anuwary Mwitike" <mwitikeanuwary@gmail.com>',
-      to: email,
-      subject: 'Thank you for reaching out!',
-      html: `
-        <h2>Thank you, ${fullName}!</h2>
-        <p>I received your message and will get back to you soon.</p>
-        <p>Best regards,<br><strong>Anuwary Mwitike</strong></p>
-      `
-    };
+const mailToSender = {
+  from: '"Anuwary Mwitike" <mwitikeanuwary@gmail.com>',
+  to: email,
+  subject: 'Thank you for reaching out!',
+  html: `
+    <h2>Thank you, ${fullName}!</h2>
+    <p>I received your message and will get back to you soon.</p>
+    <p>Best regards,<br><strong>Anuwary Mwitike</strong></p>
+  `
+};
 
-    await transporter.sendMail(mailToYou);
-    await transporter.sendMail(mailToSender);
+await transporter.sendMail(mailToYou);
+await transporter.sendMail(mailToSender);
 
-    res.status(200).json({
-      success: true,
-      message: 'Message sent successfully'
-    });
+res.status(200).json({
+  success: true,
+  message: 'Message sent successfully'
+});
+```
 
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: 'Failed to send message'
-    });
-  }
+} catch (error) {
+console.error(error);
+
+```
+res.status(500).json({
+  error: 'Failed to send message'
+});
+
+}
+});
+
+app.listen(PORT, () => {
+console.log(`Server running on port ${PORT}`);
 });
