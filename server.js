@@ -7,16 +7,19 @@ const nodemailer = require('nodemailer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware
 app.use(express.json());
 
 app.use(cors({
 origin: 'https://anuwaryportfolio.vercel.app'
 }));
 
+// Email validation
 function isValidEmail(email) {
 return /^[^\s@]+@[^\s@]+.[^\s@]+$/.test(email);
 }
 
+// Nodemailer transporter
 const transporter = nodemailer.createTransport({
 service: 'gmail',
 auth: {
@@ -25,17 +28,21 @@ pass: process.env.GMAIL_PASS
 }
 });
 
+// Home route
 app.get('/', (req, res) => {
 res.send('Portfolio Backend Running');
 });
 
+// Health check
 app.get('/health', (req, res) => {
 res.json({ status: 'ok' });
 });
 
+// Contact route
 app.post('/api/contact', async (req, res) => {
 try {
 const { fullName, email, message } = req.body;
+
 
 if (!fullName || !email || !message) {
   return res.status(400).json({
@@ -76,23 +83,24 @@ const mailToSender = {
 await transporter.sendMail(mailToYou);
 await transporter.sendMail(mailToSender);
 
-res.status(200).json({
+return res.status(200).json({
   success: true,
   message: 'Message sent successfully'
 });
 ```
 
 } catch (error) {
-console.error(error);
+console.error('Email error:', error);
 
 ```
-res.status(500).json({
+return res.status(500).json({
   error: 'Failed to send message'
 });
 
 }
 });
 
+// Start server
 app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`);
 });
